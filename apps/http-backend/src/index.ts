@@ -1,11 +1,33 @@
 import express from "express"
-// import { JWT_SECRET } from '@repo/backend-common/config';
-const app = express();
-const PORT =3001;
 import dotenv from 'dotenv'
-dotenv.config()
-const JWT_SECRET= process.env.JWT_SECRET
-app.listen(PORT,()=>{
+import {signInSchema} from "@repo/common/types"
+import {prismaClient}  from "@repo/db/client"
+const app= express()
 
-  console.log(`Http server is listening on the port ${PORT} jwtsecret ye rha ${JWT_SECRET}`)
+dotenv.config()
+app.use(express.json())
+
+app.post("/signin",async(req,res)=>{
+  const data = signInSchema.safeParse( req.body);
+if(!data.success){
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: data.error.flatten(),
+    });
+}
+const {email,password}= data.data
+const existingUser= prismaClient.user.findFirst({
+  where:{
+    email
+  },
 })
+console.log(existingUser)
+return res.json(400)
+})
+
+
+
+app.listen(3001,()=>{
+console.log(`✅ Server started successfully! Listening at http://localhost:3001`);
+})
+
